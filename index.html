@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Painel Colaborativo de Rotinas | Grupo Cavalca</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <style>
+    :root{--g:#123d2e;--g2:#1f6549;--lime:#b6d43a;--bg:#f2f0e8;--ink:#17251f;--muted:#6d7973;--line:#dfe5e1;--red:#be3f36;--amber:#cf8426;--blue:#3478a8;--white:#fff;--shadow:0 14px 34px #16352812}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+    header{height:72px;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 3vw;position:sticky;top:0;z-index:20;box-shadow:0 3px 20px #06201730}.brand{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;border:1px solid #ffffff30;border-radius:12px;display:grid;place-items:center;color:var(--lime);font:800 17px Georgia}.brand b{display:block;letter-spacing:.08em}.brand small{color:#c7d6cf;letter-spacing:.05em}.userbox{display:flex;align-items:center;gap:10px}.avatar{width:34px;height:34px;border-radius:50%;background:#ffffff17;display:grid;place-items:center;font-weight:800}.userbox small{color:#c7d6cf;display:block}.iconbtn{border:0;background:#ffffff12;color:#fff;padding:8px 10px;border-radius:9px}
+    main{max-width:1540px;margin:auto;padding:26px 3vw 50px}.setup{background:#fff5d9;border:1px solid #ecd18b;color:#684b0a;border-radius:14px;padding:13px 16px;margin-bottom:16px;display:flex;justify-content:space-between;gap:16px;align-items:center}.setup b{display:block}.hero{display:flex;justify-content:space-between;gap:22px;align-items:end;margin-bottom:20px}.eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:10px;font-weight:850;color:var(--g2)}h1{font:500 clamp(30px,4vw,48px)/1.05 Georgia;margin:6px 0 8px;color:#17372c}.hero p{margin:0;color:var(--muted)}.hero-actions{display:flex;gap:9px;flex-wrap:wrap}.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:750;white-space:nowrap}.primary{background:var(--g);color:#fff}.light{background:#fff;color:var(--ink);border:1px solid var(--line)}.soft{background:#e9eee9;color:var(--g)}.danger{background:#fcebe9;color:var(--red)}input[type=file]{display:none}
+    .panel{background:#fff;border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow)}.filters{padding:14px;display:grid;grid-template-columns:1.6fr repeat(4,1fr) auto;gap:9px;margin-bottom:16px;align-items:end}.field label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:var(--muted);margin:0 0 5px 3px}.control{width:100%;height:41px;border:1px solid var(--line);background:#fbfcfb;border-radius:9px;padding:0 10px;outline:none}.control:focus,textarea:focus{border-color:#719b89;box-shadow:0 0 0 3px #1f654912}.mine{height:41px;display:flex;gap:7px;align-items:center;background:#eef2ed;padding:0 12px;border-radius:9px;font-weight:750;white-space:nowrap}.mine input{accent-color:var(--g)}
+    .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin-bottom:16px}.card{padding:16px;position:relative;overflow:hidden}.card label{color:var(--muted);font-weight:750;font-size:12px}.number{font:600 29px Georgia;margin-top:13px}.hint{font-size:11px;color:var(--muted);margin-top:5px}.meter{height:5px;background:#edf0ed;border-radius:6px;margin-top:10px;overflow:hidden}.meter i{height:100%;display:block;background:var(--lime)}
+    .analytics{display:grid;grid-template-columns:1.35fr .65fr;gap:15px;margin-bottom:16px}.chartbox{padding:17px}.title{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}.title h2{font:600 18px Georgia;margin:0}.title p{margin:2px 0 0;color:var(--muted);font-size:12px}.chart{height:230px}
+    .tablepanel{overflow:hidden}.tablehead{padding:16px 17px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}.tablehead h2{font:600 18px Georgia;margin:0}.actions{display:flex;gap:8px}.tablewrap{overflow:auto;max-height:610px}table{width:100%;border-collapse:collapse;min-width:1250px}th{position:sticky;top:0;z-index:2;background:#f4f7f4;color:#66756e;text-transform:uppercase;font-size:10px;letter-spacing:.07em;text-align:left;padding:10px 11px}td{padding:11px;border-top:1px solid #edf0ee;vertical-align:middle}tbody tr{cursor:pointer}tbody tr:hover{background:#f7faf7}tr.overdue{background:#fff8f6}.rid{font-weight:850;color:var(--g2)}.routine{font-weight:760;max-width:270px}.sub{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:270px}.person{display:flex;gap:8px;align-items:center}.miniav{width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:#e7eee8;color:var(--g);font-size:9px;font-weight:850}.statusSelect{border:0;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:800;outline:none}.s-done{background:#e6f5ec;color:#247c51}.s-progress{background:#e9f3fa;color:#276e9c}.s-pending{background:#fff2dd;color:#9b6516}.s-map{background:#edf1ed;color:#466354}.s-cancel{background:#eee;color:#666}.late{color:var(--red);font-weight:800}.comments{display:inline-flex;gap:5px;align-items:center;background:#eef2ef;padding:5px 8px;border-radius:999px;font-size:11px}.empty{text-align:center;padding:50px;color:var(--muted)}.foot{padding:11px 17px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+    .modal{position:fixed;inset:0;background:#0b211aaa;z-index:60;display:grid;place-items:center;padding:20px}.authcard{width:min(450px,100%);background:#fff;border-radius:20px;padding:27px;box-shadow:0 30px 90px #0005}.authbrand{text-align:center;margin-bottom:20px}.authbrand .logo{margin:auto;background:var(--g);width:50px;height:50px}.authcard h2{font:600 25px Georgia;margin:14px 0 5px}.authcard p{color:var(--muted);margin:0}.authcard form{display:grid;gap:11px;margin-top:20px}.authcard .control{height:46px}.authfoot{text-align:center;margin-top:14px;color:var(--muted)}.linkbtn{border:0;background:none;color:var(--g2);font-weight:800}.error{color:var(--red);font-size:12px;min-height:17px}
+    .drawerback{position:fixed;inset:0;background:#081b1590;z-index:50}.drawer{position:fixed;z-index:51;right:0;top:0;bottom:0;width:min(560px,100%);background:#fff;box-shadow:-20px 0 60px #0002;display:flex;flex-direction:column}.drawerhead{padding:22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px}.drawerhead h2{font:600 23px Georgia;margin:4px 0}.drawerhead p{margin:0;color:var(--muted)}.close{border:0;background:#eef1ef;width:36px;height:36px;border-radius:50%}.drawerbody{padding:20px;overflow:auto;flex:1}.meta{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px}.metaitem{padding:11px;background:#f5f7f4;border-radius:10px}.metaitem small{display:block;color:var(--muted);text-transform:uppercase;font-size:9px;letter-spacing:.08em}.metaitem b{display:block;margin-top:3px}.detailstatus{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:18px}.logform{background:#f5f7f4;padding:14px;border-radius:13px;margin-bottom:20px}.logform textarea{width:100%;min-height:86px;resize:vertical;border:1px solid var(--line);border-radius:9px;padding:10px;outline:none;margin:8px 0}.logactions{display:flex;justify-content:space-between;gap:8px}.timeline h3{font:600 17px Georgia}.event{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:12px 0;border-top:1px solid #edf0ee}.eventicon{width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:#edf2ed;color:var(--g);font-weight:800}.event b{font-size:12px}.event time{color:var(--muted);font-size:11px;margin-left:6px}.event p{margin:4px 0 0;white-space:pre-wrap}.toast{position:fixed;right:20px;bottom:20px;background:#173a2e;color:#fff;padding:12px 15px;border-radius:11px;z-index:80;opacity:0;transform:translateY(70px);transition:.2s}.toast.show{opacity:1;transform:none}
+    @media(max-width:1100px){.filters{grid-template-columns:repeat(3,1fr)}.cards{grid-template-columns:repeat(3,1fr)}.analytics{grid-template-columns:1fr}.hero{align-items:flex-start;flex-direction:column}}@media(max-width:700px){header{padding:0 15px}.brand small,.userbox>div:nth-child(2){display:none}main{padding:19px 12px 40px}.filters{grid-template-columns:1fr 1fr}.filters .field:first-child{grid-column:1/-1}.cards{grid-template-columns:1fr 1fr}.card:last-child{grid-column:1/-1}.tablehead{align-items:flex-start;flex-direction:column}.actions{width:100%;flex-wrap:wrap}.actions .btn{flex:1}.meta{grid-template-columns:1fr}.setup{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo">GC</div><div><b>GRUPO CAVALCA</b><small>ROTINAS COLABORATIVAS</small></div></div>
+  <div class="userbox hidden" id="userBox"><div class="avatar" id="userInitial">U</div><div><b id="userName">Usuário</b><small id="userEmail"></small></div><button class="iconbtn" id="logout">Sair</button></div>
+</header>
+<main>
+  <div class="setup hidden" id="setupBanner"><div><b>Finalize a configuração do banco</b><span>Execute o arquivo <code>supabase/schema.sql</code> no SQL Editor do projeto.</span></div><button class="btn light" onclick="location.reload()">Tentar novamente</button></div>
+  <section class="hero">
+    <div><div class="eyebrow">Visão compartilhada em tempo real</div><h1>Rotinas claras.<br>Histórico preservado.</h1><p>Status, comentários e ações sincronizados para toda a equipe.</p></div>
+    <div class="hero-actions"><label class="btn light" for="fileInput">↑ Importar Excel</label><input id="fileInput" type="file" accept=".xlsx,.xls"><button class="btn soft" id="refresh">↻ Atualizar</button><button class="btn primary" id="exportXlsx">Exportar visão</button></div>
+  </section>
+  <section class="panel filters">
+    <div class="field"><label>Buscar</label><input class="control" id="q" placeholder="Rotina, pessoa, empresa ou descrição"></div>
+    <div class="field"><label>Responsável</label><select class="control" id="owner"><option value="">Todos</option></select></div>
+    <div class="field"><label>Setor</label><select class="control" id="department"><option value="">Todos</option></select></div>
+    <div class="field"><label>Status</label><select class="control" id="status"><option value="">Todos</option></select></div>
+    <div class="field"><label>Prioridade</label><select class="control" id="priority"><option value="">Todas</option></select></div>
+    <label class="mine"><input id="mine" type="checkbox"> Minhas rotinas</label>
+  </section>
+  <section class="cards">
+    <article class="panel card"><label>Total de rotinas</label><div class="number" id="mTotal">0</div><div class="hint">No recorte atual</div></article>
+    <article class="panel card"><label>Concluídas</label><div class="number" id="mDone">0</div><div class="hint" id="doneHint">0% do total</div></article>
+    <article class="panel card"><label>Em andamento</label><div class="number" id="mProgress">0</div><div class="hint">Trabalho iniciado</div></article>
+    <article class="panel card"><label>Atrasadas</label><div class="number" id="mLate">0</div><div class="hint">Precisam de atenção</div></article>
+    <article class="panel card"><label>Conclusão</label><div class="number" id="mRate">0%</div><div class="meter"><i id="rateBar"></i></div><div class="hint">Rotinas concluídas</div></article>
+  </section>
+  <section class="analytics">
+    <article class="panel chartbox"><div class="title"><div><h2>Desempenho por responsável</h2><p>Concluídas e em aberto</p></div></div><div class="chart"><canvas id="ownerChart"></canvas></div></article>
+    <article class="panel chartbox"><div class="title"><div><h2>Distribuição por status</h2><p>Atualizada em tempo real</p></div></div><div class="chart"><canvas id="statusChart"></canvas></div></article>
+  </section>
+  <section class="panel tablepanel">
+    <div class="tablehead"><div><h2>Rotinas da equipe</h2><div class="sub" id="resultInfo">0 registros</div></div><div class="actions"><button class="btn light" id="clearFilters">Limpar filtros</button><button class="btn light" id="exportCsv">Exportar CSV</button></div></div>
+    <div class="tablewrap"><table><thead><tr><th>ID</th><th>Rotina</th><th>Setor</th><th>Responsável</th><th>Prazo</th><th>Status</th><th>Prioridade</th><th>Registros</th><th>Atualizado</th></tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="foot">Clique em uma rotina para abrir comentários e histórico de ações.</div>
+  </section>
+</main>
+
+<div class="modal" id="authModal">
+  <div class="authcard">
+    <div class="authbrand"><div class="logo">GC</div><h2 id="authTitle">Entrar no painel</h2><p id="authSubtitle">Use seu e-mail corporativo.</p></div>
+    <form id="authForm">
+      <input class="control hidden" id="fullName" placeholder="Nome completo">
+      <input class="control" id="email" type="email" placeholder="E-mail" required>
+      <input class="control" id="password" type="password" placeholder="Senha (mínimo 6 caracteres)" minlength="6" required>
+      <div class="error" id="authError"></div>
+      <button class="btn primary" id="authSubmit">Entrar</button>
+    </form>
+    <div class="authfoot"><span id="authQuestion">Primeiro acesso?</span> <button class="linkbtn" id="toggleAuth">Criar conta</button></div>
+  </div>
+</div>
+
+<div class="drawerback hidden" id="drawerBack"></div>
+<aside class="drawer hidden" id="drawer">
+  <div class="drawerhead"><div><div class="eyebrow" id="detailId"></div><h2 id="detailTitle"></h2><p id="detailDescription"></p></div><button class="close" id="closeDrawer">×</button></div>
+  <div class="drawerbody">
+    <div class="meta" id="detailMeta"></div>
+    <div class="detailstatus"><select class="control" id="detailStatus"><option>Mapeada</option><option>Pendente</option><option>Em andamento</option><option>Concluída</option><option>Cancelada</option></select><button class="btn primary" id="saveStatus">Salvar status</button></div>
+    <form class="logform" id="eventForm">
+      <b>Novo registro</b>
+      <textarea id="eventText" placeholder="Descreva um comentário, ocorrência ou ação realizada..." required></textarea>
+      <div class="logactions"><select class="control" id="eventType"><option value="comment">Comentário</option><option value="action">Ação realizada</option></select><button class="btn primary">Registrar</button></div>
+    </form>
+    <section class="timeline"><h3>Histórico da rotina</h3><div id="events"></div></section>
+  </div>
+</aside>
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL="https://ppjgzgtlfdoumcgrczjb.supabase.co";
+const SUPABASE_KEY="sb_publishable_tfKt4b51swHhI5gqNIJ0DA_jEpkPDwB";
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const COLS=["ID","Empresa","Setor","Rotina","Descrição","Responsável","Frequência","Data Limite","Status","Percentual Concluído","Prioridade","Observação","Última Atualização"];
+const $=id=>document.getElementById(id),fold=s=>String(s??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+let session=null,profile=null,routines=[],filtered=[],eventsCount={},selected=null,authSignup=false,charts={},channel=null;
+const fmtDate=v=>v?new Intl.DateTimeFormat("pt-BR").format(new Date(v+"T12:00:00")):"—";
+const fmtTime=v=>new Intl.DateTimeFormat("pt-BR",{dateStyle:"short",timeStyle:"short"}).format(new Date(v));
+const initials=s=>String(s||"?").split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase();
+const isDone=r=>r.status==="Concluída",isLate=r=>!isDone(r)&&r.due_date&&new Date(r.due_date+"T23:59:59")<new Date();
+function toast(msg){$("toast").textContent=msg;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2600)}
+function schemaError(error){if(/relation .* does not exist|schema cache/i.test(error?.message||"")){$("setupBanner").classList.remove("hidden");return true}return false}
+async function boot(){
+  const {data}=await db.auth.getSession();session=data.session;
+  if(!session)return showAuth();
+  $("authModal").classList.add("hidden");$("userBox").classList.remove("hidden");
+  await loadProfile();await loadData();subscribe();
+}
+function showAuth(){$("authModal").classList.remove("hidden");$("userBox").classList.add("hidden")}
+async function loadProfile(){
+  const user=session.user;
+  let {data,error}=await db.from("profiles").select("*").eq("id",user.id).maybeSingle();
+  if(error&&schemaError(error))return;
+  if(!data){const full=user.user_metadata?.full_name||user.email.split("@")[0];const res=await db.from("profiles").upsert({id:user.id,full_name:full,email:user.email}).select().single();data=res.data}
+  profile=data||{full_name:user.user_metadata?.full_name||user.email,email:user.email};
+  $("userName").textContent=profile.full_name;$("userEmail").textContent=user.email;$("userInitial").textContent=initials(profile.full_name);
+}
+async function loadData(){
+  const [{data:r,error},{data:e}]=await Promise.all([db.from("routines").select("*").order("due_date",{ascending:true,nullsFirst:false}).order("id"),db.from("routine_events").select("routine_id")]);
+  if(error){schemaError(error);toast(error.message);return}
+  routines=r||[];eventsCount={};(e||[]).forEach(x=>eventsCount[x.routine_id]=(eventsCount[x.routine_id]||0)+1);fillFilters();applyFilters();
+}
+function subscribe(){
+  if(channel)db.removeChannel(channel);
+  channel=db.channel("rotinas-equipe").on("postgres_changes",{event:"*",schema:"public",table:"routines"},()=>loadData()).on("postgres_changes",{event:"INSERT",schema:"public",table:"routine_events"},p=>{eventsCount[p.new.routine_id]=(eventsCount[p.new.routine_id]||0)+1;render();if(selected?.id===p.new.routine_id)loadEvents(selected.id)}).subscribe();
+}
+function fill(id,key,first){const el=$(id),cur=el.value,vals=[...new Set(routines.map(r=>r[key]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt-BR"));el.innerHTML=`<option value="">${first}</option>`+vals.map(v=>`<option>${esc(v)}</option>`).join("");el.value=vals.includes(cur)?cur:""}
+function fillFilters(){fill("owner","owner","Todos");fill("department","department","Todos");fill("status","status","Todos");fill("priority","priority","Todas")}
+function applyFilters(){
+  const q=fold($("q").value),mine=$("mine").checked,me=fold(profile?.full_name),first=me.split(" ")[0];
+  filtered=routines.filter(r=>(!q||[r.id,r.title,r.description,r.owner,r.company,r.department].some(v=>fold(v).includes(q)))&&(!$("owner").value||r.owner===$("owner").value)&&(!$("department").value||r.department===$("department").value)&&(!$("status").value||r.status===$("status").value)&&(!$("priority").value||r.priority===$("priority").value)&&(!mine||fold(r.owner).includes(me)||fold(r.owner).split(/\s|\+/).includes(first)));
+  render();
+}
+function statusClass(s){return s==="Concluída"?"s-done":s==="Em andamento"?"s-progress":s==="Mapeada"?"s-map":s==="Cancelada"?"s-cancel":"s-pending"}
+function render(){
+  const total=filtered.length,done=filtered.filter(isDone).length,progress=filtered.filter(r=>r.status==="Em andamento").length,late=filtered.filter(isLate).length,rate=total?Math.round(done/total*100):0;
+  $("mTotal").textContent=total;$("mDone").textContent=done;$("mProgress").textContent=progress;$("mLate").textContent=late;$("mRate").textContent=rate+"%";$("doneHint").textContent=rate+"% do total";$("rateBar").style.width=rate+"%";$("resultInfo").textContent=`${total} ${total===1?"registro":"registros"}`;
+  $("rows").innerHTML=total?filtered.map(r=>`<tr data-id="${esc(r.id)}" class="${isLate(r)?"overdue":""}"><td class="rid">${esc(r.id)}</td><td><div class="routine">${esc(r.title)}</div><div class="sub">${esc(r.description||"")}</div></td><td>${esc(r.department||"—")}</td><td><div class="person"><i class="miniav">${initials(r.owner)}</i>${esc(r.owner||"A definir")}</div></td><td class="${isLate(r)?"late":""}">${fmtDate(r.due_date)}</td><td><select class="statusSelect ${statusClass(r.status)}" data-status-id="${esc(r.id)}">${["Mapeada","Pendente","Em andamento","Concluída","Cancelada"].map(s=>`<option ${s===r.status?"selected":""}>${s}</option>`).join("")}</select></td><td>${esc(r.priority||"—")}</td><td><span class="comments">◌ ${eventsCount[r.id]||0}</span></td><td>${fmtTime(r.updated_at)}</td></tr>`).join(""):`<tr><td colspan="9"><div class="empty"><b>${routines.length?"Nenhuma rotina encontrada":"Ainda não há rotinas"}</b><br>${routines.length?"Ajuste os filtros.":"Importe a planilha Excel para começar."}</div></td></tr>`;
+  document.querySelectorAll("tbody tr[data-id]").forEach(tr=>tr.onclick=()=>openRoutine(tr.dataset.id));
+  document.querySelectorAll("[data-status-id]").forEach(sel=>sel.onchange=e=>{e.stopPropagation();updateStatus(sel.dataset.statusId,sel.value);});renderCharts();
+}
+function renderCharts(){
+  if(!window.Chart)return;Chart.defaults.font.family="Inter,system-ui";Chart.defaults.color="#68766f";
+  const owners=[...new Set(filtered.map(r=>r.owner||"A definir"))].slice(0,10),done=owners.map(o=>filtered.filter(r=>r.owner===o&&isDone(r)).length),open=owners.map(o=>filtered.filter(r=>r.owner===o&&!isDone(r)).length);
+  charts.owner?.destroy();charts.owner=new Chart($("ownerChart"),{type:"bar",data:{labels:owners,datasets:[{label:"Concluídas",data:done,backgroundColor:"#1f6549",borderRadius:5},{label:"Em aberto",data:open,backgroundColor:"#b6d43a",borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:"y",plugins:{legend:{position:"bottom"}},scales:{x:{beginAtZero:true,ticks:{precision:0}},y:{grid:{display:false}}}}});
+  const labels=["Mapeada","Pendente","Em andamento","Concluída","Cancelada"],vals=labels.map(s=>filtered.filter(r=>r.status===s).length);
+  charts.status?.destroy();charts.status=new Chart($("statusChart"),{type:"doughnut",data:{labels,datasets:[{data:vals,backgroundColor:["#698276","#cf8426","#3478a8","#1f6549","#999"],borderColor:"#fff",borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:"66%",plugins:{legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:8}}}}});
+}
+async function updateStatus(id,newStatus){
+  const r=routines.find(x=>x.id===id);if(!r||r.status===newStatus)return;const old=r.status,percent=newStatus==="Concluída"?100:newStatus==="Em andamento"?50:0;
+  const {error}=await db.from("routines").update({status:newStatus,percent_complete:percent,updated_by:session.user.id}).eq("id",id);
+  if(error)return toast(error.message);
+  await db.from("routine_events").insert({routine_id:id,event_type:"status",content:`Status alterado de “${old}” para “${newStatus}”.`,status_from:old,status_to:newStatus,author_id:session.user.id,author_name:profile.full_name});toast("Status atualizado.");
+}
+async function openRoutine(id){selected=routines.find(r=>r.id===id);if(!selected)return;$("detailId").textContent=selected.id;$("detailTitle").textContent=selected.title;$("detailDescription").textContent=selected.description||"";$("detailStatus").value=selected.status;$("detailMeta").innerHTML=[["Responsável",selected.owner||"A definir"],["Setor",selected.department||"—"],["Prazo",fmtDate(selected.due_date)],["Prioridade",selected.priority||"—"],["Frequência",selected.frequency||"—"],["Observação",selected.observation||"—"]].map(x=>`<div class="metaitem"><small>${x[0]}</small><b>${esc(x[1])}</b></div>`).join("");$("drawer").classList.remove("hidden");$("drawerBack").classList.remove("hidden");await loadEvents(id)}
+async function loadEvents(id){const {data,error}=await db.from("routine_events").select("*").eq("routine_id",id).order("created_at",{ascending:false});if(error)return toast(error.message);$("events").innerHTML=data?.length?data.map(e=>`<article class="event"><div class="eventicon">${e.event_type==="action"?"✓":e.event_type==="status"?"↻":"✎"}</div><div><b>${esc(e.author_name)}</b><time>${fmtTime(e.created_at)}</time><p>${esc(e.content)}</p></div></article>`).join(""):`<div class="empty">Nenhum registro nesta rotina.</div>`}
+function closeDrawer(){$("drawer").classList.add("hidden");$("drawerBack").classList.add("hidden");selected=null}
+$("authForm").onsubmit=async e=>{e.preventDefault();$("authError").textContent="";const email=$("email").value.trim(),password=$("password").value,name=$("fullName").value.trim();$("authSubmit").disabled=true;let result;if(authSignup)result=await db.auth.signUp({email,password,options:{data:{full_name:name}}});else result=await db.auth.signInWithPassword({email,password});$("authSubmit").disabled=false;if(result.error)return $("authError").textContent=result.error.message;if(authSignup&&!result.data.session){$("authError").style.color="#277854";$("authError").textContent="Conta criada. Confira seu e-mail para confirmar o acesso.";return}session=result.data.session;await boot()};
+$("toggleAuth").onclick=()=>{authSignup=!authSignup;$("fullName").classList.toggle("hidden",!authSignup);$("fullName").required=authSignup;$("authTitle").textContent=authSignup?"Criar sua conta":"Entrar no painel";$("authSubmit").textContent=authSignup?"Criar conta":"Entrar";$("authQuestion").textContent=authSignup?"Já possui conta?":"Primeiro acesso?";$("toggleAuth").textContent=authSignup?"Entrar":"Criar conta";$("authError").textContent=""};
+$("logout").onclick=async()=>{await db.auth.signOut();session=null;profile=null;routines=[];channel&&db.removeChannel(channel);showAuth()};
+$("saveStatus").onclick=async()=>{if(selected)await updateStatus(selected.id,$("detailStatus").value)};
+$("eventForm").onsubmit=async e=>{e.preventDefault();if(!selected)return;const content=$("eventText").value.trim();if(!content)return;const {error}=await db.from("routine_events").insert({routine_id:selected.id,event_type:$("eventType").value,content,author_id:session.user.id,author_name:profile.full_name});if(error)return toast(error.message);$("eventText").value="";toast("Registro adicionado.");await loadEvents(selected.id)};
+$("closeDrawer").onclick=closeDrawer;$("drawerBack").onclick=closeDrawer;
+["q","owner","department","status","priority","mine"].forEach(id=>$(id).addEventListener(id==="q"?"input":"change",applyFilters));
+$("clearFilters").onclick=()=>{["q","owner","department","status","priority"].forEach(id=>$(id).value="");$("mine").checked=false;applyFilters()};$("refresh").onclick=loadData;
+function readDate(v){if(v instanceof Date)return v.toISOString().slice(0,10);if(typeof v==="number"){const p=XLSX.SSF.parse_date_code(v);return p?`${p.y}-${String(p.m).padStart(2,"0")}-${String(p.d).padStart(2,"0")}`:null}if(!v)return null;const s=String(v),br=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);return br?`${br[3]}-${br[2].padStart(2,"0")}-${br[1].padStart(2,"0")}`:s.slice(0,10)}
+function value(o,n){const k=Object.keys(o).find(x=>fold(x)===fold(n));return k?o[k]:""}
+$("fileInput").onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:true}),raw=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:"",raw:true}),mapped=raw.map((o,i)=>{let p=Number(String(value(o,"Percentual Concluído")).replace("%","").replace(",","."));if(p<=1&&p>0)p*=100;return{id:String(value(o,"ID")||`RT-${i+1}`),company:String(value(o,"Empresa")||"Grupo Cavalca"),department:String(value(o,"Setor")||""),title:String(value(o,"Rotina")||""),description:String(value(o,"Descrição")||""),owner:String(value(o,"Responsável")||"A definir"),frequency:String(value(o,"Frequência")||""),due_date:readDate(value(o,"Data Limite")),status:String(value(o,"Status")||"Pendente"),percent_complete:Math.max(0,Math.min(100,Math.round(p||0))),priority:String(value(o,"Prioridade")||""),observation:String(value(o,"Observação")||""),source_updated_at:readDate(value(o,"Última Atualização")),created_by:session.user.id,updated_by:session.user.id}}).filter(r=>r.title);for(let i=0;i<mapped.length;i+=100){const {error}=await db.from("routines").upsert(mapped.slice(i,i+100),{onConflict:"id"});if(error)throw error}toast(`${mapped.length} rotinas importadas.`);await loadData()}catch(err){schemaError(err);toast("Falha na importação: "+err.message)}finally{e.target.value=""}};
+function exportRows(type){if(!filtered.length)return toast("Não há dados para exportar.");const data=filtered.map(r=>({"ID":r.id,"Empresa":r.company,"Setor":r.department,"Rotina":r.title,"Descrição":r.description,"Responsável":r.owner,"Frequência":r.frequency,"Data Limite":fmtDate(r.due_date),"Status":r.status,"Percentual Concluído":r.percent_complete,"Prioridade":r.priority,"Observação":r.observation,"Última Atualização":fmtTime(r.updated_at)})),ws=XLSX.utils.json_to_sheet(data);if(type==="xlsx"){const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Rotinas");XLSX.writeFile(wb,"rotinas-equipe.xlsx")}else{const blob=new Blob(["\ufeff"+XLSX.utils.sheet_to_csv(ws,{FS:";"})],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="rotinas-equipe.csv";a.click();URL.revokeObjectURL(a.href)}}
+$("exportXlsx").onclick=()=>exportRows("xlsx");$("exportCsv").onclick=()=>exportRows("csv");
+db.auth.onAuthStateChange((event,newSession)=>{if(event==="SIGNED_IN"&&!session){session=newSession;boot()}if(event==="SIGNED_OUT")showAuth()});boot();
+</script>
+</body>
+</html>
