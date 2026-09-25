@@ -1,6 +1,6 @@
 /* Interface pública; os dados e permissões ficam no Supabase sob RLS. */
-const SUPABASE_URL = "https://ppjgzgtlfdoumcgrczjb.supabase.co";
-const SUPABASE_KEY = "sb_publishable_tfKt4b51swHhI5gqNIJ0DA_jEpkPDwB";
+const SUPABASE_URL = "https://jbnqgchofaprjjwbuzpe.supabase.co";
+const SUPABASE_KEY = "sb_publishable_jjy5twY8P1oroKyMgF5A_g_loODauqr";
 const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const $ = (selector) => document.querySelector(selector);
 const field = (form, name) => form.elements.namedItem(name);
