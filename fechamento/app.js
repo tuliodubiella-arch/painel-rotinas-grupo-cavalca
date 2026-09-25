@@ -221,7 +221,7 @@ function renderExecution() {
     <tbody>${tasks.map((task) => { const activity = task.historic ? null : taskState(task.id); return `<tr><td><strong>${esc(task.account)}</strong><small>${esc(task.group_name || "")}</small></td><td>${esc(task.company_name)}</td>
       <td>${task.historic ? esc(task.owner_name) : `<select class="select" data-action="task-owner" data-id="${esc(task.id)}"><option value="">A definir</option>${memberOptions}</select>`}</td>
       <td>${badge(statusOf(task))}</td><td class="live-time" data-id="${esc(task.id)}">${task.historic ? "—" : duration(currentSeconds(activity))}</td>
-      <td>${task.historic ? dateBR(task.start_date) : brasilia(activity?.first_started_at)}</td><td>${task.historic ? dateBR(task.end_date) : brasilia(activity?.finished_at)}</td>
+      <td>${task.historic ? esc(task.start_date_raw || dateBR(task.start_date)) : brasilia(activity?.first_started_at)}</td><td>${task.historic ? esc(task.end_date_raw || dateBR(task.end_date)) : brasilia(activity?.finished_at)}</td>
       <td>${task.historic ? "—" : `<div class="actions"><button class="btn compact play" data-action="activity" data-id="${esc(task.id)}" data-kind="play" title="Iniciar">▶ PLAY</button><button class="btn compact pause" data-action="activity" data-id="${esc(task.id)}" data-kind="pause" title="Pausar">Ⅱ PAUSE</button><button class="btn compact stop" data-action="activity" data-id="${esc(task.id)}" data-kind="stop" title="Finalizar">■ STOP</button></div>`}</td></tr>`; }).join("")}</tbody></table>${tasks.length ? "" : '<div class="empty">Nenhuma atividade neste filtro.</div>'}</div>
     <div class="footer-note">${tasks.length} atividade(s). Os horários são apresentados no fuso de Brasília/DF.</div></section>`;
 }
@@ -244,7 +244,7 @@ function renderHistory() {
   const months = [...new Set([...state.history.map((item) => item.competence), ...state.states.map((item) => item.competence)])].sort();
   return `<div class="two-col"><section class="panel"><div class="panel-head"><h2>Resumo de ${esc(monthName(state.month))}</h2></div><div class="panel-body">
     <p><strong>${monthlyTasks().length}</strong> atividades; <strong>${monthlyTasks().filter((item) => ["Finalizado", "Concluída"].includes(statusOf(item))).length}</strong> finalizadas.</p>
-    <p class="muted">Os fechamentos históricos preservam as datas já cadastradas. Os tempos em horas começam com os apontamentos feitos no painel.</p></div></section>
+    <p class="muted">Os fechamentos históricos preservam as datas já cadastradas, inclusive as incompletas, exibidas como no original. Os tempos em horas começam com os apontamentos feitos no painel.</p></div></section>
     <section class="panel"><div class="panel-head"><h2>Meses registrados</h2></div><div class="panel-body history-grid">${months.map((month) => { const count = state.history.filter((item) => item.competence === month).length || state.states.filter((item) => item.competence === month).length; return `<button class="history-month" data-action="choose-month" data-month="${month}">${esc(monthName(month))}<strong>${count}</strong><small>registros</small></button>`; }).join("") || '<div class="empty">Histórico ainda não migrado.</div>'}</div></section></div>`;
 }
 function renderRegistry() {
