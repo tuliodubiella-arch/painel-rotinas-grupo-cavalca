@@ -1,4 +1,4 @@
-const CACHE = "fc-shell-v3";
+const CACHE = "fc-shell-v4";
 const SHELL = ["./", "./index.html", "./app.js", "./styles.css", "./manifest.webmanifest", "./icon.svg", "./icon-192.png", "./icon-512.png",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"];
 self.addEventListener("install", (event) => {
