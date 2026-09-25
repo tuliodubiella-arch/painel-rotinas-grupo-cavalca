@@ -69,12 +69,12 @@ function plannedDate(month, businessDay) {
   return null;
 }
 function validCnpj(value) {
-  const digits = value.replace(/\D/g, "");
-  if (digits.length !== 14 || /^(\d)\1+$/.test(digits)) return false;
+  const characters = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (!/^[A-Z0-9]{12}\d{2}$/.test(characters) || /^(\d)\1+$/.test(characters)) return false;
   for (const length of [12, 13]) {
     const weights = length === 12 ? [5,4,3,2,9,8,7,6,5,4,3,2] : [6,5,4,3,2,9,8,7,6,5,4,3,2];
-    const sum = weights.reduce((total, weight, index) => total + Number(digits[index]) * weight, 0);
-    if ((sum % 11 < 2 ? 0 : 11 - sum % 11) !== Number(digits[length])) return false;
+    const sum = weights.reduce((total, weight, index) => total + (characters.charCodeAt(index) - 48) * weight, 0);
+    if ((sum % 11 < 2 ? 0 : 11 - sum % 11) !== Number(characters[length])) return false;
   }
   return true;
 }
@@ -251,7 +251,7 @@ function renderRegistry() {
     ${state.member?.is_admin ? `<form id="invite-form" class="form-grid"><label class="field"><span>Nome</span><input class="input" name="name" required></label><label class="field"><span>E-mail</span><input class="input" type="email" name="email" required></label><button class="btn primary" type="submit">Convidar responsável</button></form>` : '<p class="muted">Somente o administrador cadastra novos acessos.</p>'}
     <h3 class="section-title" style="margin-top:22px">Cadastrados com acesso</h3><div class="list">${state.members.map((person) => `<div class="list-row"><div><input class="input" data-member-name="${esc(person.id)}" value="${esc(person.name)}" ${state.member?.is_admin ? "" : "disabled"}><small>${esc(person.email)} ${person.is_admin ? "· administrador" : ""}</small></div>${state.member?.is_admin ? `<button class="btn compact" data-action="member-name" data-id="${esc(person.id)}">Salvar</button>` : ""}</div>`).join("")}</div>
     <h3 class="section-title" style="margin-top:22px">Pré-cadastrados sem acesso</h3><p class="muted">Ao convidar com o mesmo nome, as rotinas são vinculadas à conta.</p><div class="list">${legacyOwners.map((name) => `<div class="list-row"><input class="input" data-legacy-name="${esc(name)}" value="${esc(name)}" ${state.member?.is_admin ? "" : "disabled"}>${state.member?.is_admin ? `<button class="btn compact" data-action="legacy-name" data-old="${esc(name)}">Salvar</button>` : ""}</div>`).join("")}</div></div></section>
-    <section class="panel"><div class="panel-head"><h2>Empresas / CNPJs</h2></div><div class="panel-body"><form id="company-form" class="form-grid"><label class="field wide"><span>Razão social</span><input class="input" name="name" required></label><label class="field"><span>CNPJ</span><input class="input" name="cnpj" placeholder="00.000.000/0000-00" required></label><label class="field"><span>Prioridade inicial</span><select class="select" name="category"><option>DEMAIS</option><option>HOLDING</option></select></label><button class="btn primary" type="submit">Incluir empresa</button></form>
+    <section class="panel"><div class="panel-head"><h2>Empresas / CNPJs</h2></div><div class="panel-body"><form id="company-form" class="form-grid"><label class="field wide"><span>Razão social</span><input class="input" name="name" required></label><label class="field"><span>CNPJ</span><input class="input" name="cnpj" placeholder="Numérico ou alfanumérico" required></label><label class="field"><span>Prioridade inicial</span><select class="select" name="category"><option>DEMAIS</option><option>HOLDING</option></select></label><button class="btn primary" type="submit">Incluir empresa</button></form>
     <h3 class="section-title" style="margin-top:22px">Cadastradas</h3><div class="list">${state.companies.filter((item) => item.active).map((item) => `<div class="list-row"><div><strong>${esc(item.name)}</strong><small>${esc(item.cnpj || "CNPJ não informado")} · ${esc(item.category)}</small></div></div>`).join("")}</div></div></section>
     <section class="panel"><div class="panel-head"><h2>Contas / rotinas</h2></div><div class="panel-body"><form id="task-form" class="form-grid"><label class="field wide"><span>Empresa</span><select class="select" name="company_id" required><option value="">Selecione</option>${companyOptions}</select></label><label class="field"><span>Conta / rotina</span><input class="input" name="account" required></label><label class="field"><span>Grupo</span><input class="input" name="group_name" value="OUTROS"></label><label class="field wide"><span>Responsável</span><select class="select" name="responsible_id"><option value="">A definir</option>${memberOptions}</select></label><button class="btn primary" type="submit">Incluir rotina</button></form>
     <h3 class="section-title" style="margin-top:22px">${state.tasks.filter((item) => item.active).length} rotinas cadastradas</h3><div class="list">${state.tasks.filter((item) => item.active).map((item) => `<div class="list-row"><div><strong>${esc(item.account)}</strong><small>${esc(companyName(item.company_id))} · ${esc(memberName(item.responsible_id, item.responsible_legacy_name))}</small></div></div>`).join("")}</div></div></section>
@@ -341,7 +341,7 @@ document.addEventListener("submit", async (event) => {
       }
     } else if (form.id === "invite-form") await inviteMember(form);
     else if (form.id === "company-form") {
-      const name = field(form, "name").value.trim(), cnpj = field(form, "cnpj").value.replace(/\D/g, ""), category = field(form, "category").value;
+      const name = field(form, "name").value.trim(), cnpj = field(form, "cnpj").value.toUpperCase().replace(/[^A-Z0-9]/g, ""), category = field(form, "category").value;
       if (!name || !validCnpj(cnpj)) throw new Error("Informe uma empresa e um CNPJ válido.");
       if (state.companies.some((item) => item.cnpj === cnpj)) throw new Error("Este CNPJ já está cadastrado.");
       const id = uid();
