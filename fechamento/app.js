@@ -385,8 +385,11 @@ document.addEventListener("change", (event) => {
   else if (action === "goal-day") {
     const day = element.value ? Number(element.value) : null;
     if (day && (day < 1 || day > 23)) return toast("Informe um dia útil entre 1 e 23.");
-    saveGoal(id, { business_day: day, planned_date: plannedDate(state.month, day) });
+    const date = plannedDate(state.month, day);
+    if (day && !date) return toast("Este mês não possui tantos dias úteis. Escolha um número menor.");
+    saveGoal(id, { business_day: day, planned_date: date });
   } else if (action === "receipt") {
+    if (!state.targets.some((item) => item.company_id === id && item.competence === state.month)) saveGoal(id, {});
     const received_at = element.value === "Recebido" ? new Date().toISOString() : null;
     const row = { company_id: id, competence: state.month, department, status: element.value || "Pendente", received_at, updated_by: state.member.id };
     changeLocal("receipts", row, ["company_id", "competence", "department"]);
