@@ -15,6 +15,7 @@ const state = {
   states: [], holidays: [], history: [], tab: "Painel", month: "2026-09", query: "",
   companyFilter: "", ownerFilter: "", statusFilter: "", online: navigator.onLine,
   queue: [], ready: false, needsPassword: initialInvite, tick: Date.now(), error: "",
+  historyLoaded: false,
 };
 let flushing = false;
 let toastTimer;
@@ -89,6 +90,7 @@ function loadCache() {
   try {
     const data = JSON.parse(localStorage.getItem(cacheKey()) || "null");
     if (data) for (const key of Object.keys(data)) if (key in state) state[key] = data[key];
+    state.historyLoaded = Boolean(data && Object.hasOwn(data, "history"));
     state.queue = JSON.parse(localStorage.getItem(queueKey()) || "[]");
     state.member = state.members.find((person) => person.id === state.session?.user?.id && person.active) || null;
     state.ready = Boolean(data);
@@ -137,10 +139,12 @@ async function loadData() {
   try {
     const [members, companies, tasks, targets, receipts, activityStates, holidays, history] = await Promise.all([
       allRows("fc_members"), allRows("fc_companies"), allRows("fc_tasks"), allRows("fc_targets"),
-      allRows("fc_receipts"), allRows("fc_activity_states"), allRows("fc_holidays"), allRows("fc_history_tasks"),
+      allRows("fc_receipts"), allRows("fc_activity_states"), allRows("fc_holidays"),
+      state.historyLoaded ? Promise.resolve(state.history) : allRows("fc_history_tasks"),
     ]);
     state.members = members; state.companies = companies; state.tasks = tasks; state.targets = targets;
     state.receipts = receipts; state.states = activityStates; state.holidays = holidays; state.history = history;
+    state.historyLoaded = true;
     state.member = members.find((person) => person.id === state.session.user.id && person.active) || null;
     state.error = state.member ? "" : "Seu acesso ao fechamento ainda não foi liberado pelo administrador.";
     state.ready = true; saveCache(); render();
@@ -442,7 +446,7 @@ setInterval(() => {
   if (state.tab !== "Execução") return;
   document.querySelectorAll(".live-time").forEach((element) => { element.textContent = duration(currentSeconds(taskState(element.dataset.id))); });
 }, 1000);
-setInterval(() => { if (state.session && state.member && state.online) state.queue.length ? void flush() : void loadData(); }, 20000);
+setInterval(() => { if (state.session && state.member && state.online) state.queue.length ? void flush() : void loadData(); }, 45000);
 client.auth.onAuthStateChange((_event, session) => {
   if (_event === "PASSWORD_RECOVERY") state.needsPassword = true;
   if (session && !state.session) { state.session = session; loadCache(); setTimeout(() => void loadData(), 0); }
