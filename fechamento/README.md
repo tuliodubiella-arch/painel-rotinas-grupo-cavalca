@@ -1,10 +1,10 @@
 # Fechamento contábil
 
-Painel claro e instalável para a execução mensal das contas por empresa. A interface fica em `fechamento/` no GitHub Pages; autenticação, dados e permissões ficam no projeto Supabase já usado pelo repositório. Nenhuma informação contábil deve ser publicada no GitHub.
+Painel claro e instalável para a execução mensal das contas por empresa. A interface fica em `fechamento/` no GitHub Pages; autenticação, dados e permissões ficam no projeto Supabase da conta do administrador, separado do painel antigo. Nenhuma informação contábil deve ser publicada no GitHub.
 
 ## Ativação
 
-1. No projeto Supabase existente, execute `supabase/closing_schema.sql` no SQL Editor.
+1. No projeto Supabase `jbnqgchofaprjjwbuzpe`, execute `supabase/closing_schema.sql` no SQL Editor.
 2. Importe uma única vez os dados históricos e atuais com o arquivo privado de migração, guardado fora do repositório. Não copie esse arquivo para o GitHub.
 3. Crie ou localize o usuário administrador em **Authentication → Users** e vincule seu ID a `fc_members`, marcando `is_admin = true`. O administrador deve definir sua senha pela página de recuperação ou pelo convite da conta, sem compartilhar senha.
 4. Implante `supabase/functions/fc-invite-member/index.ts` como Edge Function `fc-invite-member` com verificação de JWT. As variáveis `SUPABASE_URL`, `SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` são fornecidas pelo Supabase à função. A chave de serviço nunca vai para o navegador ou GitHub.
