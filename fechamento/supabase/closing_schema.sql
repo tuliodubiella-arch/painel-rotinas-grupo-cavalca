@@ -115,6 +115,8 @@ create table if not exists public.fc_history_tasks (
   status text,
   start_date date,
   end_date date,
+  start_date_raw text,
+  end_date_raw text,
   primary key(id, competence)
 );
 
