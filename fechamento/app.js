@@ -321,7 +321,7 @@ async function inviteMember(form) {
   const name = field(form, "name").value.trim();
   if (!email || name.length < 2) return toast("Informe nome e e-mail válidos.");
   const { data, error } = await client.functions.invoke("fc-invite-member", { body: { email, name } });
-  if (error || !data?.ok) return toast(`Convite não enviado: ${error?.message || data?.error || "função indisponível"}`);
+  if (error || !data?.ok) return toast(`Convite não enviado: ${data?.error || error?.message || "função indisponível"}`);
   form.reset(); toast(data.existingUser
     ? "Acesso liberado. A pessoa pode entrar com a senha que já usa neste Supabase."
     : "Convite enviado. O responsável definirá a senha no primeiro acesso."); await loadData();
