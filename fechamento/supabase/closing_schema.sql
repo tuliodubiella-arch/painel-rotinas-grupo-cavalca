@@ -212,6 +212,8 @@ begin
   insert into public.fc_targets(company_id, competence, category, sort_order)
     select id, p_competence, category, 9999 from public.fc_companies where id = v_company
     on conflict (company_id, competence) do nothing;
+  -- Serializa os apontamentos da empresa: o último STOP sempre enxerga as demais rotinas finalizadas.
+  perform 1 from public.fc_targets where company_id = v_company and competence = p_competence for update;
   insert into public.fc_activity_states(task_id, competence) values(p_task_id, p_competence) on conflict do nothing;
   select * into v_state from public.fc_activity_states where task_id = p_task_id and competence = p_competence for update;
   if exists(select 1 from public.fc_activity_events where id = p_event_id) then return v_state; end if;
